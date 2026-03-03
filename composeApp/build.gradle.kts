@@ -26,14 +26,14 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     jvm()
-    
+
     js {
         browser()
         binaries.executable()
     }
-    
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
@@ -95,6 +95,9 @@ android {
 
 dependencies {
     debugImplementation(libs.compose.uiTooling)
+
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
 }
 
 compose.desktop {

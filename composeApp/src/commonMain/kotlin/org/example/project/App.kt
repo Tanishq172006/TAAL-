@@ -84,7 +84,7 @@ fun MusicPadScreen(){
         )
     }
 
-    val audioPlayer = remember { AudioPlayer() }
+    val audioPlayer = remember { createAudioPlayer() }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -217,10 +217,13 @@ fun SoundGrid(
                             color = tile.instrument.color,
                             icon = painterResource(tile.instrument.iconRes),
                             onClick = {
-                                tile.beat?.let {
-                                    audioPlayer.playSound(it.fileName)
-                                } ?: audioPlayer.playSound(tile.instrument.name)
+                                tile.beat?.let { beat ->
+                                    audioPlayer.play(beat.fileName.lowercase())   // play the assigned beat sound
+                                } ?: run {
+                                    audioPlayer.play(tile.instrument.name.lowercase())  // fallback to instrument default
+                                }
                             },
+
                             onLongPress = {
                                 onLongPress(category.title, tile)
                             }
