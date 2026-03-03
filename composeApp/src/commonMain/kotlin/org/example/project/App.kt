@@ -1,11 +1,13 @@
 package org.example.project
 
+import TileViewModel
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +46,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
 import org.example.project.ui.theme.*
 import org.jetbrains.compose.resources.DrawableResource
@@ -67,148 +70,19 @@ fun App() {
 
 @Composable
 fun MusicPadScreen(){
-    val drumInstruments = listOf(
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
-        Instruments("drum", DrumRed, Res.drawable.drum),
+    val viewModel = remember { TileViewModel() }
 
+    var showBeatSelector by remember { mutableStateOf(false) }
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
+    var selectedTile by remember { mutableStateOf<Tile?>(null) }
 
-    )
-
-    val guitarInstruments = listOf(
-        Instruments("guitar", GuitarOrange, Res.drawable.guitar),
-        Instruments("guitar", GuitarOrange, Res.drawable.guitar),
-        Instruments("guitar", GuitarOrange, Res.drawable.guitar),
-        Instruments("guitar", GuitarOrange, Res.drawable.guitar),
-        Instruments("guitar", GuitarOrange, Res.drawable.guitar),
-        Instruments("guitar", GuitarOrange, Res.drawable.guitar),
-        Instruments("guitar", GuitarOrange, Res.drawable.guitar),
-        Instruments("guitar", GuitarOrange, Res.drawable.guitar),
-        Instruments("guitar", GuitarOrange, Res.drawable.guitar),
-        Instruments("guitar", GuitarOrange, Res.drawable.guitar),
-        Instruments("guitar", GuitarOrange, Res.drawable.guitar),
+    val beats = remember {
+        listOf(
+            Beat("b1", "Classic Beat", "drum.wav"),
+            Beat("b2", "Rock Beat", "rock.wav"),
+            Beat("b3", "Jazz Beat", "jazz.wav")
         )
-
-    val Electricguitar = listOf(
-        Instruments("electric_guitar", ElectricGuitarDGreen, Res.drawable.electric_guitar),
-        Instruments("electric_guitar", ElectricGuitarDGreen, Res.drawable.electric_guitar),
-        Instruments("electric_guitar", ElectricGuitarDGreen, Res.drawable.electric_guitar),
-        Instruments("electric_guitar", ElectricGuitarDGreen, Res.drawable.electric_guitar),
-        Instruments("electric_guitar", ElectricGuitarDGreen, Res.drawable.electric_guitar),
-        Instruments("electric_guitar", ElectricGuitarDGreen, Res.drawable.electric_guitar),
-        Instruments("electric_guitar", ElectricGuitarDGreen, Res.drawable.electric_guitar),
-        Instruments("electric_guitar", ElectricGuitarDGreen, Res.drawable.electric_guitar),
-        Instruments("electric_guitar", ElectricGuitarDGreen, Res.drawable.electric_guitar),
-        Instruments("electric_guitar", ElectricGuitarDGreen, Res.drawable.electric_guitar),
-    )
-
-    val saxInstruments = listOf(
-        Instruments("sax", SaxYellow, Res.drawable.saxophone),
-        Instruments("sax", SaxYellow, Res.drawable.saxophone),
-        Instruments("sax", SaxYellow, Res.drawable.saxophone),
-        Instruments("sax", SaxYellow, Res.drawable.saxophone),
-        Instruments("sax", SaxYellow, Res.drawable.saxophone),
-        Instruments("sax", SaxYellow, Res.drawable.saxophone),
-        Instruments("sax", SaxYellow, Res.drawable.saxophone),
-        Instruments("sax", SaxYellow, Res.drawable.saxophone),
-        Instruments("sax", SaxYellow, Res.drawable.saxophone),
-        Instruments("sax", SaxYellow, Res.drawable.saxophone),
-        Instruments("sax", SaxYellow, Res.drawable.saxophone),
-        Instruments("sax", SaxYellow, Res.drawable.saxophone),
-
-    )
-
-    val flute = listOf(
-        Instruments("flute", flutePurple, Res.drawable.flute),
-        Instruments("flute", flutePurple, Res.drawable.flute),
-        Instruments("flute", flutePurple, Res.drawable.flute),
-        Instruments("flute", flutePurple, Res.drawable.flute),
-        Instruments("flute", flutePurple, Res.drawable.flute),
-        Instruments("flute", flutePurple, Res.drawable.flute),
-        Instruments("flute", flutePurple, Res.drawable.flute),
-        Instruments("flute", flutePurple, Res.drawable.flute),
-        Instruments("flute", flutePurple, Res.drawable.flute),
-        Instruments("flute", flutePurple, Res.drawable.flute),
-        Instruments("flute", flutePurple, Res.drawable.flute),
-        Instruments("flute", flutePurple, Res.drawable.flute),
-    )
-
-    val piano = listOf(
-
-        Instruments("Piano", pianoBlue, Res.drawable.piano),
-        Instruments("Piano", pianoBlue, Res.drawable.piano),
-        Instruments("Piano", pianoBlue, Res.drawable.piano),
-        Instruments("Piano", pianoBlue, Res.drawable.piano),
-        Instruments("Piano", pianoBlue, Res.drawable.piano),
-        Instruments("Piano", pianoBlue, Res.drawable.piano),
-        Instruments("Piano", pianoBlue, Res.drawable.piano),
-        Instruments("Piano", pianoBlue, Res.drawable.piano),
-        Instruments("Piano", pianoBlue, Res.drawable.piano),
-        Instruments("Piano", pianoBlue, Res.drawable.piano),
-        Instruments("Piano", pianoBlue, Res.drawable.piano),
-        Instruments("Piano", pianoBlue, Res.drawable.piano),
-    )
-
-    val harmoniumAll = listOf(
-        Instruments("Harmonium", harmoniumColor, Res.drawable.harmonium),
-        Instruments("Harmonium", harmoniumColor, Res.drawable.harmonium),
-        Instruments("Harmonium", harmoniumColor, Res.drawable.harmonium),
-        Instruments("Harmonium", harmoniumColor, Res.drawable.harmonium),
-        Instruments("Harmonium", harmoniumColor, Res.drawable.harmonium),
-        Instruments("Harmonium", harmoniumColor, Res.drawable.harmonium),
-        Instruments("Harmonium", harmoniumColor, Res.drawable.harmonium),
-        Instruments("Harmonium", harmoniumColor, Res.drawable.harmonium),
-        Instruments("Harmonium", harmoniumColor, Res.drawable.harmonium),
-        Instruments("Harmonium", harmoniumColor, Res.drawable.harmonium),
-        Instruments("Harmonium", harmoniumColor, Res.drawable.harmonium),
-        Instruments("Harmonium", harmoniumColor, Res.drawable.harmonium),
-        )
-
-    val violin = listOf(
-        Instruments("Violin", violinPink, Res.drawable.violin),
-        Instruments("Violin", violinPink, Res.drawable.violin),
-        Instruments("Violin", violinPink, Res.drawable.violin),
-        Instruments("Violin", violinPink, Res.drawable.violin),
-        Instruments("Violin", violinPink, Res.drawable.violin),
-        Instruments("Violin", violinPink, Res.drawable.violin),
-        Instruments("Violin", violinPink, Res.drawable.violin),
-        Instruments("Violin", violinPink, Res.drawable.violin),
-        Instruments("Violin", violinPink, Res.drawable.violin),
-        Instruments("Violin", violinPink, Res.drawable.violin),
-        Instruments("Violin", violinPink, Res.drawable.violin),
-        Instruments("Violin", violinPink, Res.drawable.violin),
-        )
-
-
-    val categories = listOf(
-        InstrumentCategory("Drums", drumInstruments),
-        InstrumentCategory("Guitars", guitarInstruments),
-        InstrumentCategory("Sax", saxInstruments),
-        InstrumentCategory("ElectricGuitar", Electricguitar),
-        InstrumentCategory("Flute", flute),
-        InstrumentCategory("Piano", piano),
-        InstrumentCategory("Harmonium", harmoniumAll),
-        InstrumentCategory("Violin", violin),
-
-        )
+    }
 
     val audioPlayer = remember { AudioPlayer() }
     Box(
@@ -228,9 +102,14 @@ fun MusicPadScreen(){
             Spacer(Modifier.height(16.dp))
 
             SoundGrid(
-                categories = categories,
+                categories = viewModel.categories,
                 audioPlayer = audioPlayer,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                onLongPress = { categoryTitle, tile ->
+                    selectedCategory = categoryTitle
+                    selectedTile = tile
+                    showBeatSelector = true
+                }
             )
         }
 
@@ -241,6 +120,32 @@ fun MusicPadScreen(){
                 .fillMaxWidth()
                 .padding(bottom = 20.dp)
         )
+
+        if (showBeatSelector && selectedTile != null) {
+            Dialog(onDismissRequest = { showBeatSelector = false }) {
+                BeatSelector(
+                    beats = beats,
+                    audioPlayer = audioPlayer,
+                    onSaveToTile = { beat ->
+                        viewModel.assignBeat(
+                            selectedCategory!!,
+                            selectedTile!!.id,
+                            beat
+                        )
+                        showBeatSelector = false
+                    },
+                    onCreateNewTile = { beat ->
+                        viewModel.addTile(
+                            selectedCategory!!,
+                            selectedTile!!,
+                            beat
+                        )
+                        showBeatSelector = false
+                    },
+                    onDismiss = { showBeatSelector = false }
+                )
+            }
+        }
     }
 }
 
@@ -272,8 +177,9 @@ fun TopBar()
 fun SoundGrid(
     categories: List<InstrumentCategory>,
     audioPlayer: AudioPlayer,
-    modifier: Modifier = Modifier
-) {
+    modifier: Modifier = Modifier,
+    onLongPress: (String, Tile) -> Unit
+){
 
     LazyColumn(
         modifier = modifier,
@@ -303,16 +209,22 @@ fun SoundGrid(
                         .height(200.dp)
                 ) {
 
-                    items(category.instruments.size) { index ->
+                    items(category.tiles.size) { index ->
 
-                        val instrument = category.instruments[index]
+                        val tile = category.tiles[index]
 
                         SoundPad(
-                            color = instrument.color,
-                            icon = painterResource(instrument.iconRes)
-                        ) {
-                            audioPlayer.playSound(instrument.name)
-                        }
+                            color = tile.instrument.color,
+                            icon = painterResource(tile.instrument.iconRes),
+                            onClick = {
+                                tile.beat?.let {
+                                    audioPlayer.playSound(it.fileName)
+                                } ?: audioPlayer.playSound(tile.instrument.name)
+                            },
+                            onLongPress = {
+                                onLongPress(category.title, tile)
+                            }
+                        )
                     }
                 }
             }
@@ -325,8 +237,9 @@ fun SoundGrid(
 fun SoundPad(
     color: Color,
     icon: Painter,
-    onClick: () -> Unit
-) {
+    onClick: () -> Unit,
+    onLongPress: () -> Unit
+){
     var pressed by remember { mutableStateOf(false) }
 
     val scale by animateFloatAsState(
@@ -343,10 +256,15 @@ fun SoundPad(
             }
             .clip(RoundedCornerShape(20.dp))
             .background(color)
-            .clickable {
-                pressed = true
-                onClick()
-            }
+            .combinedClickable(
+                onClick = {
+                    pressed = true
+                    onClick()
+                },
+                onLongClick = {
+                    onLongPress()
+                }
+            )
             .padding(8.dp),
         contentAlignment = Alignment.Center
     ) {
