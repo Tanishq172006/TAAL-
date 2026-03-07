@@ -171,3 +171,23 @@ https://github.com/user-attachments/assets/a14a79d8-fedf-42d6-bb51-016aab62aaf2
 Byeee ><<3
 
 
+
+## Devlog #6
+*07-03-2026* ~by [Lavanya Rastogi](https://www.github.com/Lavanya24R)
+
+Welcome back to our devlog! Day 7 was mainly about UI fixes, some funtionality addition, local database setup and audio engine manifestation. Our individual blood(not literally;)), sweat and tears were shed as follows:
+
+- [Tanishq](https://github.com/Tanishq172006) fixed the issues in existing UI. Added code for each beat tile to have its own beat entity and save the beat in the tile created by us. Created the midi and piano UI. Researched about general song fonts and got an open source technology for generating each piano note. Implemented the technology for jvmMain(Desktop app).
+- [Ananya](https://github.com/ananyatiwari05) made a project on firebase, researched and got a repository on how to use it cross platform. Set up email and password signup and login for our app along with Google OAuth authentication. Added a profile icon in the UI and designed the login page. Made the authentication interface in commonMain and implemented it in androidMain and iOSMain.
+- [Anshul](https://www.github.com/anshulbahdani) watched a youtube video and set up a submodule which would generate CMake, C and C++ files automatically and help us in making our Audio Engine but later, on further research, got to know that Java Native Interface(JNI) would be better for our Audio Engine. Therefore, read more about JNI networking and learned how to implement it using expect and actual classes.
+- [Lavanya](https://www.github.com/Lavanya24R) studied and built the folder structure for SQLDelight and found its most stable version. Made the expect class in the commonMain and actual classes in androidMain, iOSMain etc. to implement it. Wrote queries for the database and studied the code to see the places from where they would be called.
+
+ From UI to music, to database to engines(not literal ones again;)) we worked on all the main topics revolving around our app. (u.u)
+
+### For Tomorrow
+- [Tanishq](https://github.com/Tanishq172006) will make dialogue boxes for other instruments as well, look into the issues where our app is crashing, add the feature to highlight a tile if in use and add the metronome feature. Help Anshul in JNI if it posses a frustrative hairpull for him(>u<).
+- [Ananya](https://github.com/ananyatiwari05) will implement the firebase database using rest APIs for webMain, finish login page UI, thoroughly test the working of authentication and will research about cloud storage.
+- [Anshul](https://www.github.com/anshulbahdani) will continue the linking process of JNI in our app using expect and actual classes.
+- [Lavanya](https://www.github.com/Lavanya24R) will design the logo of our app and write code to send and receive data to/from the database. Test it with some sample data. 
+
+Day 7 added more functionalities to our app and made us proceed further towards our goal making us sleep along with snores.zzZZ
