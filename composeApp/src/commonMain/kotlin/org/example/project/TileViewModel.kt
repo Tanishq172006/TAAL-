@@ -61,7 +61,7 @@ class TileViewModel {
 
                     if (tile.id == tileId) {
                         tile.copy(
-                            beat = beat.copy()
+                            beat = beat.deepCopy()
                         )
                     } else {
                         tile
@@ -81,7 +81,7 @@ class TileViewModel {
                     tiles = category.tiles + Tile(
                         id = nextId++,
                         instrument = baseTile.instrument,
-                        beat = beat.copy()
+                        beat = beat.deepCopy()
                     )
                 )
             } else category

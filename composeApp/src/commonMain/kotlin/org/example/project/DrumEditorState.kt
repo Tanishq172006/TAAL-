@@ -26,4 +26,17 @@ class DrumEditorState {
     fun clear() {
         grid = List(rows) { MutableList(cols) { false } }
     }
+
+
+    fun deepCopy(): DrumEditorState {
+        val newState = DrumEditorState()
+
+        newState.grid = grid.map { row ->
+            row.toMutableList()
+        }
+
+        newState.playhead = playhead
+
+        return newState
+    }
 }

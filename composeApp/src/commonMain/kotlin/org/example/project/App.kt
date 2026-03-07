@@ -2,10 +2,12 @@ package org.example.project
 
 import PianoRollEditor
 import TileViewModel
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -65,6 +67,8 @@ fun App(audioPlayer: AudioPlayer) {
     val beatEditorState = rememberBeatEditorState()
     val audioImporter = remember { AudioImporter() }
     val tileViewModel = remember { TileViewModel() }
+    val metronome = remember { MetronomeEngine() }
+    val sequencer = remember { StepSequencer(metronome, audioPlayer) }
 
 
     MaterialTheme {
@@ -90,7 +94,9 @@ fun App(audioPlayer: AudioPlayer) {
                     onNavigateBack = { currentScreen = "projects" },
                     audioImporter = audioImporter,
                     tileViewModel = tileViewModel,
-                    audioPlayer = audioPlayer
+                    audioPlayer = audioPlayer,
+                    metronome = metronome,
+                    sequencer = sequencer
                 )
             }
         }
@@ -104,13 +110,16 @@ fun MusicPadScreen(
     onNavigateBack: () -> Unit,
     audioImporter: AudioImporter,
     tileViewModel: TileViewModel,
-    audioPlayer: AudioPlayer
+    audioPlayer: AudioPlayer,
+    metronome: MetronomeEngine,
+    sequencer: StepSequencer
 ){
 
     var showAudioEditor by remember { mutableStateOf(false) }
     var drumEditorState by remember { mutableStateOf<DrumEditorState?>(null) }
     var playing by remember { mutableStateOf(false) }
     var pianoEditorState by remember { mutableStateOf<PianoEditorState?>(null) }
+    var metronomeRunning by remember { mutableStateOf(false) }
 
     var isEditorMode by remember { mutableStateOf(false) }
 
@@ -144,7 +153,21 @@ fun MusicPadScreen(
         ) {
 
 
-            TopBar(onBackClick = onNavigateBack)
+            TopBar(
+                onBackClick = onNavigateBack,
+                metronome = metronome,
+                metronomeRunning = metronomeRunning,
+                onToggleMetronome = {
+                    metronomeRunning = !metronomeRunning
+
+                    if (metronomeRunning) {
+                        metronome.start()
+                        sequencer.start()
+                    } else {
+                        metronome.stop()
+                    }
+                }
+            )
 
             Spacer(Modifier.height(16.dp))
 
@@ -154,6 +177,8 @@ fun MusicPadScreen(
                     categories = tileViewModel.categories,
                     audioPlayer = audioPlayer,
                     modifier = Modifier.weight(1f),
+                    metronome = metronome,
+                    sequencer = sequencer,
                     onLongPress = { categoryTitle, tile ->
 
                         selectedCategory = categoryTitle
@@ -390,7 +415,12 @@ fun MusicPadScreen(
 
 
 @Composable
-fun TopBar(onBackClick: () -> Unit) {
+fun TopBar(
+    onBackClick: () -> Unit,
+    metronome: MetronomeEngine,
+    metronomeRunning: Boolean,
+    onToggleMetronome: () -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -413,11 +443,13 @@ fun TopBar(onBackClick: () -> Unit) {
         }
         Row {
             IconButton({}) { Icon(Icons.Default.Mic, null, tint = Color.White) }
-            IconButton({}) { Icon(
-                imageVector = Icons.Default.Speed,
-                contentDescription = "Metronome",
-                tint = Color.White
-            ) }
+            IconButton(onClick = onToggleMetronome) {
+                Icon(
+                    imageVector = Icons.Default.Speed,
+                    contentDescription = "Metronome",
+                    tint = if (metronomeRunning) Color.Green else Color.White
+                )
+            }
             IconButton({}) { Icon(Icons.Default.VolumeUp, null, tint = Color.White) }
             IconButton({}) { Icon(Icons.Default.Menu, null, tint = Color.White) }
         }
@@ -429,9 +461,13 @@ fun TopBar(onBackClick: () -> Unit) {
 fun SoundGrid(
     categories: List<InstrumentCategory>,
     audioPlayer: AudioPlayer,
+    metronome: MetronomeEngine,
+    sequencer: StepSequencer,
     modifier: Modifier = Modifier,
     onLongPress: (String, Tile) -> Unit
 ){
+    var activeTiles by remember { mutableStateOf(setOf<Int>()) }
+    val currentStep by metronome.step.collectAsState()
 
     LazyColumn(
         modifier = modifier,
@@ -463,52 +499,62 @@ fun SoundGrid(
                     items(category.tiles.size) { index ->
 
                         val tile = category.tiles[index]
+                        val column = index / 2
 
                         SoundPad(
                             color = tile.instrument.color,
                             icon = painterResource(tile.instrument.iconRes),
+                            isActive = tile.id in activeTiles,
+                            isPlayhead = column == currentStep,
                             onClick = {
+
+                                activeTiles = activeTiles + tile.id
 
                                 val beat = tile.beat
 
-                                if (beat?.pianoPattern != null) {
+                                CoroutineScope(Dispatchers.Main).launch {
 
-                                    playPianoPattern(
-                                        beat.pianoPattern,
-                                        audioPlayer
-                                    )
+                                    if (beat?.pianoPattern != null) {
 
+                                        sequencer.addPianoPattern(beat.pianoPattern)
 
-                                } else if (beat?.drumPattern != null) {
+                                    } else if (beat?.drumPattern != null) {
 
-                                    playDrumPattern(
-                                        state = beat.drumPattern,
-                                        audioPlayer = audioPlayer
-                                    )
+                                        sequencer.addDrumPattern(beat.drumPattern)
 
-                                } else if (beat?.fileName != null) {
+                                    } else if (beat?.fileName != null) {
 
-                                    audioPlayer.playSound(beat.fileName)
+                                        audioPlayer.playSound(beat.fileName)
 
-                                } else {
+                                    } else {
 
-                                    audioPlayer.playSound(tile.instrument.name)
-                                }
+                                        when (tile.instrument.name) {
+                                            "drum" -> audioPlayer.playSound("kick.wav")
+                                            "piano" -> audioPlayer.playSound("piano_c4.wav")
+                                            "harmonium" -> audioPlayer.playSound("piano_c3.wav")
+                                            "violin" -> audioPlayer.playSound("piano_g4.wav")
+                                        }
+                                    }
 
-                                if (beat?.drumPattern != null) {
+                                    val duration = when {
+                                        beat?.pianoPattern != null -> {
+                                            val bpm = 120
+                                            val stepDuration = 60000 / (bpm * 4)
+                                            stepDuration * beat.pianoPattern.cols
+                                        }
 
-                                    playDrumPattern(
-                                        state = beat.drumPattern,
-                                        audioPlayer = audioPlayer
-                                    )
+                                        beat?.drumPattern != null -> {
+                                            val bpm = 120
+                                            val stepDuration = 60000 / (bpm * 4)
+                                            stepDuration * beat.drumPattern.cols
+                                        }
 
-                                } else if (beat?.fileName != null) {
+                                        else -> 400
+                                    }
 
-                                    audioPlayer.playSound(beat.fileName)
+                                    delay(duration.toLong())
 
-                                } else {
-
-                                    audioPlayer.playSound(tile.instrument.name)
+                                    activeTiles = activeTiles - tile.id
                                 }
                             },
                             onLongPress = {
@@ -526,10 +572,16 @@ fun SoundGrid(
 fun SoundPad(
     color: Color,
     icon: Painter,
+    isActive: Boolean,
+    isPlayhead: Boolean,
     onClick: () -> Unit,
     onLongPress: () -> Unit
 ){
     var pressed by remember { mutableStateOf(false) }
+    val animatedColor by animateColorAsState(
+        if (isActive) Color.White else color,
+        label = ""
+    )
 
     val scale by animateFloatAsState(
         targetValue = if (pressed) 0.92f else 1f,
@@ -544,7 +596,18 @@ fun SoundPad(
                 scaleY = scale
             }
             .clip(RoundedCornerShape(20.dp))
-            .background(color)
+            .background(
+                when {
+                    isPlayhead -> Color.White.copy(alpha = 0.25f)
+                    isActive -> animatedColor
+                    else -> color
+                }
+            )
+            .border(
+                if (isActive) 3.dp else 0.dp,
+                Color.White,
+                RoundedCornerShape(20.dp)
+            )
             .combinedClickable(
                 onClick = {
                     pressed = true
@@ -566,7 +629,7 @@ fun SoundPad(
 
     LaunchedEffect(pressed) {
         if (pressed) {
-            delay(80)
+            delay(150)
             pressed = false
         }
     }
@@ -607,64 +670,51 @@ fun BottomControls(
     }
 }
 
-fun playDrumPattern(
-    state: DrumEditorState,
-    audioPlayer: AudioPlayer
-) {
-
-    CoroutineScope(Dispatchers.Default).launch {
-
-        val drumFiles = listOf(
-            "kick.wav",
-            "snare.wav",
-            "closedhat.wav",
-            "openhat.wav",
-            "tom.wav",
-            "crash.wav",
-            "ride.wav",
-            "clap.wav"
-        )
-
-        val bpm = 120
-        val stepDuration = 60000 / (bpm * 4)
-
-        repeat(state.cols) { step ->
-
-            state.grid.forEachIndexed { row, steps ->
-                if (steps[step]) {
-                    audioPlayer.playSound(drumFiles[row])
-                }
-            }
-
-            delay(stepDuration.toLong())
-        }
-    }
-}
-
-fun playPianoPattern(
-    state: PianoEditorState,
-    audioPlayer: AudioPlayer
-) {
-
-    CoroutineScope(Dispatchers.Default).launch {
-
-        val bpm = 120
-        val stepDuration = 60000 / (bpm * 4)
-
-        for (step in 0 until state.cols) {
-
-            state.playhead = step
-
-            state.grid.forEachIndexed { row, steps ->
-                if (steps[step]) {
-                    audioPlayer.playSound(pianoNotes[row])
-                }
-            }
-
-            delay(stepDuration.toLong())
-        }
-    }
-}
+//fun playDrumPattern(
+//    state: DrumEditorState,
+//    audioPlayer: AudioPlayer,
+//    metronome: MetronomeEngine
+//) {
+//
+//    CoroutineScope(Dispatchers.Default).launch {
+//
+//        val drumFiles = listOf(
+//            "kick.wav","snare.wav","closedhat.wav",
+//            "openhat.wav","tom.wav","crash.wav",
+//            "ride.wav","clap.wav"
+//        )
+//
+//        metronome.step.collect { step ->
+//
+//            state.grid.forEachIndexed { row, steps ->
+//                if (steps[step]) {
+//                    audioPlayer.playSound(drumFiles[row])
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//fun playPianoPattern(
+//    state: PianoEditorState,
+//    audioPlayer: AudioPlayer,
+//    metronome: MetronomeEngine
+//) {
+//
+//    CoroutineScope(Dispatchers.Default).launch {
+//
+//        metronome.step.collect { step ->
+//
+//            state.playhead = step
+//
+//            state.grid.forEachIndexed { row, steps ->
+//                if (steps[step]) {
+//                    audioPlayer.playSound(pianoNotes[row])
+//                }
+//            }
+//        }
+//    }
+//}
 
 //@Preview
 //@Composable

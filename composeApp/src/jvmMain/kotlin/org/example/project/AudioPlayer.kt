@@ -7,21 +7,23 @@ import javax.sound.midi.Synthesizer
 
 actual class AudioPlayer {
 
-    private val synth: Synthesizer = MidiSystem.getSynthesizer()
-    private val channel by lazy { synth.channels[0] }
+    private val clips = mutableMapOf<String, Clip>()
 
-    init {
-        synth.open()
+    private val synth: Synthesizer by lazy {
+        MidiSystem.getSynthesizer().apply {
+            open()
 
-        val url = javaClass.classLoader.getResource("GeneralUser GS.sf2")
-
-        if (url != null) {
-            val soundbank = MidiSystem.getSoundbank(url)
-            synth.loadAllInstruments(soundbank)
+            val url = Thread.currentThread()
+                .contextClassLoader
+                ?.getResource("GeneralUser GS.sf2")
+            if (url != null) {
+                val soundbank = MidiSystem.getSoundbank(url)
+                loadAllInstruments(soundbank)
+            }
         }
-
-        channel.programChange(0)
     }
+
+    private val channel by lazy { synth.channels[0] }
 
     actual fun playSound(name: String) {
 
@@ -33,14 +35,23 @@ actual class AudioPlayer {
     }
 
     private fun playSample(name: String) {
-
         try {
 
-            val resource = javaClass.classLoader.getResource(name) ?: return
-            val audioInputStream = AudioSystem.getAudioInputStream(resource)
+            val clip = clips.getOrPut(name) {
 
-            val clip: Clip = AudioSystem.getClip()
-            clip.open(audioInputStream)
+                val resource = Thread.currentThread()
+                    .contextClassLoader
+                    ?.getResource(name)
+                    ?: throw IllegalArgumentException("Sound resource not found: $name")
+
+                val stream = AudioSystem.getAudioInputStream(resource)
+
+                val c = AudioSystem.getClip()
+                c.open(stream)
+                c
+            }
+
+            clip.framePosition = 0
             clip.start()
 
         } catch (e: Exception) {
@@ -61,7 +72,6 @@ actual class AudioPlayer {
     }
 
     private fun noteToMidi(note: String): Int {
-
         return when (note) {
             "piano_c2.wav" -> 36
             "piano_d2.wav" -> 38

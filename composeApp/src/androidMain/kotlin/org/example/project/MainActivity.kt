@@ -20,11 +20,7 @@ class MainActivity : ComponentActivity() {
         AppContextHolder.context = applicationContext
         AudioImporter.currentActivity = this
 
-
-        audioPlayer = AudioPlayer()
-
-
-        audioPlayer.init(this)
+        audioPlayer = AudioPlayer(this)
 
         setContent {
             App(audioPlayer)
@@ -44,6 +40,5 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun AppAndroidPreview() {
-
-    App(audioPlayer = AudioPlayer())
+    // preview cannot access Android context, so this should not create AudioPlayer
 }
