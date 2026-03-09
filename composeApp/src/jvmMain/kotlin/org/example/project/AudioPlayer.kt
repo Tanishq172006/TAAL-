@@ -1,7 +1,6 @@
 package org.example.project
 
-import javax.sound.sampled.AudioSystem
-import javax.sound.sampled.Clip
+import javax.sound.sampled.*
 
 actual class AudioPlayer {
 
@@ -22,10 +21,25 @@ actual class AudioPlayer {
                     ?.getResource(name)
                     ?: throw IllegalArgumentException("Sound resource not found: $name")
 
-                val stream = AudioSystem.getAudioInputStream(resource)
+                val originalStream = AudioSystem.getAudioInputStream(resource)
+
+                val baseFormat = originalStream.format
+
+                val decodedFormat = AudioFormat(
+                    AudioFormat.Encoding.PCM_SIGNED,
+                    baseFormat.sampleRate,
+                    16,
+                    baseFormat.channels,
+                    baseFormat.channels * 2,
+                    baseFormat.sampleRate,
+                    false
+                )
+
+                val decodedStream =
+                    AudioSystem.getAudioInputStream(decodedFormat, originalStream)
 
                 val c = AudioSystem.getClip()
-                c.open(stream)
+                c.open(decodedStream)
                 c
             }
 

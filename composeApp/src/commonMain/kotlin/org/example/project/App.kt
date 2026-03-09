@@ -259,28 +259,6 @@ fun MusicPadScreen(
                     )
 
                     Spacer(Modifier.height(16.dp))
-                    Text(
-                        "+ Import Audio",
-                        color = Color.Blue,
-                        modifier = Modifier.clickable {
-
-                            audioImporter.pickAudio { path ->
-
-                                tileViewModel.assignBeat(
-                                    selectedCategory!!,
-                                    selectedTile!!.id,
-                                    Beat(
-                                        id = "imported_${Clock.System.now().toEpochMilliseconds()}",
-                                        name = "Imported",
-                                        fileName = path
-                                    )
-                                )
-
-                                showBeatSelector = false
-                            }
-
-                        }
-                    )
                 }
             }
         }
@@ -338,20 +316,6 @@ fun MusicPadScreen(
                             showDrumEditor = false
                         }
                     )
-
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-
-                        Button(onClick = { playing = true }) {
-                            Text("Play")
-                        }
-
-                        Button(onClick = { playing = false }) {
-                            Text("Stop")
-                        }
-                    }
                 }
             }
         }

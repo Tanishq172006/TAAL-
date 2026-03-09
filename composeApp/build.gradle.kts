@@ -76,7 +76,7 @@ kotlin {
 //            implementation("dev.gitlive:firebase-auth:1.10.3") {
   //              exclude(group = "androidx.lifecycle")
    //         }
-            implementation("dev.gitlive:firebase-auth:1.10.3")
+//            implementation("dev.gitlive:firebase-auth:1.10.3")
         }
 
         commonTest.dependencies {

@@ -2,7 +2,9 @@ package org.example.project
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -20,6 +22,8 @@ fun DrumBeatEditor(
 ) {
 
     var playing by remember { mutableStateOf(false) }
+
+    val scrollState = rememberScrollState()
 
     val drumFiles = listOf(
         "kick.wav",
@@ -47,7 +51,7 @@ fun DrumBeatEditor(
 
         if (!playing) return@LaunchedEffect
 
-        val bpm = 120
+        val bpm = 60
         val stepDuration = 60000L / (bpm * 4)
 
         while (playing) {
@@ -92,23 +96,28 @@ fun DrumBeatEditor(
                         .padding(end = 6.dp)
                 )
 
-                row.forEachIndexed { colIndex, active ->
+                Row(
+                    modifier = Modifier.horizontalScroll(scrollState)
+                ) {
 
-                    Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .padding(2.dp)
-                            .background(
-                                when {
-                                    colIndex == state.playhead -> Color.Yellow
-                                    active -> Color.Green
-                                    else -> Color.DarkGray
+                    row.forEachIndexed { colIndex, active ->
+
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .padding(2.dp)
+                                .background(
+                                    when {
+                                        colIndex == state.playhead -> Color.Yellow
+                                        active -> Color.Green
+                                        else -> Color.DarkGray
+                                    }
+                                )
+                                .clickable {
+                                    state.toggle(rowIndex, colIndex)
                                 }
-                            )
-                            .clickable {
-                                state.toggle(rowIndex, colIndex)
-                            }
-                    )
+                        )
+                    }
                 }
             }
 
@@ -120,6 +129,7 @@ fun DrumBeatEditor(
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier.fillMaxWidth()
+
         ) {
 
             Text(
