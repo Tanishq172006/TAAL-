@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "464898087369",
+    "project_id": "taal-foss",
+    "storage_bucket": "taal-foss.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:464898087369:android:fa0344abbae718343f7018",
+        "android_client_info": {
+          "package_name": "org.example.project"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "464898087369-a7fho4p8v4n6efesh524tunv6f2e9vn8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.example.project",
+            "certificate_hash": "acc3c8ccf2ed9c8f53accf1865629ba2d9732426"
+          }
+        },
+        {
+          "client_id": "464898087369-kga1alvnsrma2t3n9cadhj38rvcqv928.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAdnFPCZG4wWMg7oJQxbIi_8ROkvX35aM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "464898087369-kga1alvnsrma2t3n9cadhj38rvcqv928.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
