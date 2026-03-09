@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Button
@@ -47,10 +50,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 import org.example.project.ui.theme.*
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlin.time.Clock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +59,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import pianoNotes
 import taal.composeapp.generated.resources.Res
+import kotlin.time.ExperimentalTime
+
+
 @Composable
 fun App(
     audioPlayer: AudioPlayer,
@@ -99,19 +103,20 @@ fun App(
                             tileViewModel = tileViewModel,
                             audioPlayer = audioPlayer,
                             metronome = metronome,
-                            sequencer = sequencer
+                            sequencer = sequencer,
+                            onProfileClick = { showAuthScreen = true }
                         )
                     }
                 }
 
-                ProfileIcon(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(16.dp),
-                    onClick = {
-                        showAuthScreen = true
-                    }
-                )
+//                ProfileIcon(
+//                    modifier = Modifier
+//                        .align(Alignment.TopCenter)
+//                        .padding(10.dp),
+//                    onClick = {
+//                        showAuthScreen = true
+//                    }
+//                )
 
                 if (showAuthScreen) {
                     Dialog(onDismissRequest = { showAuthScreen = false }) {
@@ -131,6 +136,7 @@ fun App(
 }
 
 @Composable
+@OptIn(ExperimentalTime::class)
 fun MusicPadScreen(
     state: BeatEditorState,
     onNavigateBack: () -> Unit,
@@ -138,7 +144,8 @@ fun MusicPadScreen(
     tileViewModel: TileViewModel,
     audioPlayer: AudioPlayer,
     metronome: MetronomeEngine,
-    sequencer: StepSequencer
+    sequencer: StepSequencer,
+    onProfileClick: () -> Unit
 ){
     var showAudioEditor by remember { mutableStateOf(false) }
     var drumEditorState by remember { mutableStateOf<DrumEditorState?>(null) }
@@ -165,6 +172,7 @@ fun MusicPadScreen(
             TopBar(
                 onBackClick = onNavigateBack,
                 metronome = metronome,
+                onProfileClick = onProfileClick,
                 metronomeRunning = metronomeRunning,
                 onToggleMetronome = {
                     metronomeRunning = !metronomeRunning
@@ -246,7 +254,32 @@ fun MusicPadScreen(
                                 showBeatSelector = false
                             }
                         },
+
                         onDismiss = { showBeatSelector = false }
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        "+ Import Audio",
+                        color = Color.Blue,
+                        modifier = Modifier.clickable {
+
+                            audioImporter.pickAudio { path ->
+
+                                tileViewModel.assignBeat(
+                                    selectedCategory!!,
+                                    selectedTile!!.id,
+                                    Beat(
+                                        id = "imported_${Clock.System.now().toEpochMilliseconds()}",
+                                        name = "Imported",
+                                        fileName = path
+                                    )
+                                )
+
+                                showBeatSelector = false
+                            }
+
+                        }
                     )
                 }
             }
@@ -258,10 +291,22 @@ fun MusicPadScreen(
                     PianoRollEditor(
                         state = pianoEditorState ?: PianoEditorState(),
                         audioPlayer = audioPlayer,
+
                         onSave = {
-                            tileViewModel.assignBeat(selectedCategory!!, selectedTile!!.id, Beat("piano_${Clock.System.now().toEpochMilliseconds()}", "Piano Pattern", pianoPattern = pianoEditorState))
+
+                            tileViewModel.assignBeat(
+                                selectedCategory!!,
+                                selectedTile!!.id,
+                                Beat(
+                                    id = "piano_${Clock.System.now().toEpochMilliseconds()}",
+                                    name = "Piano Pattern",
+                                    pianoPattern = pianoEditorState
+                                )
+                            )
+
                             showPianoEditor = false
                         },
+
                         onClose = { showPianoEditor = false }
                     )
                 }
@@ -275,11 +320,38 @@ fun MusicPadScreen(
                         state = drumEditorState!!,
                         audioPlayer = audioPlayer,
                         onSave = {
-                            tileViewModel.assignBeat(selectedCategory!!, selectedTile!!.id, Beat("custom_${Clock.System.now().toEpochMilliseconds()}", "Custom Beat", drumPattern = drumEditorState!!))
+
+                            tileViewModel.assignBeat(
+                                selectedCategory!!,
+                                selectedTile!!.id,
+                                Beat(
+                                    id = "custom_${Clock.System.now().toEpochMilliseconds()}",
+                                    name = "Custom Beat",
+                                    drumPattern = drumEditorState!!
+                                )
+                            )
+
                             showDrumEditor = false
                         },
-                        onClose = { showDrumEditor = false }
+
+                        onClose = {
+                            showDrumEditor = false
+                        }
                     )
+
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+
+                        Button(onClick = { playing = true }) {
+                            Text("Play")
+                        }
+
+                        Button(onClick = { playing = false }) {
+                            Text("Stop")
+                        }
+                    }
                 }
             }
         }
@@ -287,10 +359,18 @@ fun MusicPadScreen(
         if (showAudioEditor && selectedTile != null) {
             Dialog(onDismissRequest = { showAudioEditor = false }) {
                 AudioEditor(
-                    fileName = selectedTile!!.beat?.fileName ?: selectedTile!!.instrument.name,
+                    fileName = selectedTile!!.beat?.fileName
+                        ?: selectedTile!!.instrument.name,
+
                     onClose = { showAudioEditor = false },
                     onSave = { fileName ->
-                        tileViewModel.assignBeat(selectedCategory!!, selectedTile!!.id, Beat("edited", "Edited Beat", fileName))
+
+                        tileViewModel.assignBeat(
+                            selectedCategory!!,
+                            selectedTile!!.id,
+                            Beat("edited", "Edited Beat", fileName)
+                        )
+
                         showAudioEditor = false
                     }
                 )
@@ -303,6 +383,7 @@ fun MusicPadScreen(
 fun TopBar(
     onBackClick: () -> Unit,
     metronome: MetronomeEngine,
+    onProfileClick: () -> Unit,
     metronomeRunning: Boolean,
     onToggleMetronome: () -> Unit
 ) {
@@ -314,16 +395,41 @@ fun TopBar(
         IconButton(onClick = onBackClick) {
             Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
         }
-        Box(modifier = Modifier.background(Color.DarkGray, RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)) {
-            Text(text = "00:00:00", color = Color.White, fontWeight = FontWeight.Medium)
+        Box(
+            modifier = Modifier
+                .background(Color.DarkGray, RoundedCornerShape(8.dp))
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+        ) {
+            Text(
+                text = "00:00:00",
+                color = Color.White,
+                fontWeight = FontWeight.Medium
+            )
         }
-        Row {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+        ) {
             IconButton({}) { Icon(Icons.Default.Mic, null, tint = Color.White) }
             IconButton(onClick = onToggleMetronome) {
-                Icon(imageVector = Icons.Default.Speed, contentDescription = "Metronome", tint = if (metronomeRunning) Color.Green else Color.White)
+                Icon(
+                    imageVector = Icons.Default.Speed,
+                    contentDescription = "Metronome",
+                    tint = if (metronomeRunning) Color.Green else Color.White
+                )
             }
             IconButton({}) { Icon(Icons.Default.VolumeUp, null, tint = Color.White) }
             IconButton({}) { Icon(Icons.Default.Menu, null, tint = Color.White) }
+            IconButton(
+                onClick = onProfileClick
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.AccountCircle,
+                    contentDescription = "Profile",
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
     }
 }
@@ -341,16 +447,29 @@ fun SoundGrid(
     var activeTiles by remember { mutableStateOf(setOf<Int>()) }
     val currentStep by metronome.step.collectAsState()
 
-    LazyColumn(modifier = modifier, verticalArrangement = Arrangement.spacedBy(24.dp)) {
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+
         items(categories.size) { categoryIndex ->
             val category = categories[categoryIndex]
             Column {
-                Text(text = category.title, style = MaterialTheme.typography.titleMedium, color = Color.White, modifier = Modifier.padding(bottom = 12.dp))
+
+                Text(
+                    text = category.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
                 LazyHorizontalGrid(
                     rows = GridCells.Fixed(2),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
                 ) {
                     items(category.tiles.size) { index ->
                         val tile = category.tiles[index]
@@ -362,12 +481,25 @@ fun SoundGrid(
                             isPlayhead = column == currentStep,
                             onClick = {
                                 activeTiles = activeTiles + tile.id
+
+                                val beat = tile.beat
+
                                 CoroutineScope(Dispatchers.Main).launch {
-                                    val beat = tile.beat
-                                    if (beat?.pianoPattern != null) sequencer.addPianoPattern(beat.pianoPattern)
-                                    else if (beat?.drumPattern != null) sequencer.addDrumPattern(beat.drumPattern)
-                                    else if (beat?.fileName != null) audioPlayer.playSound(beat.fileName)
-                                    else {
+
+                                    if (beat?.pianoPattern != null) {
+
+                                        sequencer.addPianoPattern(beat.pianoPattern)
+
+                                    } else if (beat?.drumPattern != null) {
+
+                                        sequencer.addDrumPattern(beat.drumPattern)
+
+                                    } else if (beat?.fileName != null) {
+
+                                        audioPlayer.playSound(beat.fileName)
+
+                                    } else {
+
                                         when (tile.instrument.name) {
                                             "drum" -> audioPlayer.playSound("kick.wav")
                                             "piano" -> audioPlayer.playSound("piano_c4.wav")
@@ -375,11 +507,31 @@ fun SoundGrid(
                                             "violin" -> audioPlayer.playSound("piano_g4.wav")
                                         }
                                     }
-                                    delay(400)
+
+                                    val duration = when {
+                                        beat?.pianoPattern != null -> {
+                                            val bpm = 120
+                                            val stepDuration = 60000 / (bpm * 4)
+                                            stepDuration * beat.pianoPattern.cols
+                                        }
+
+                                        beat?.drumPattern != null -> {
+                                            val bpm = 120
+                                            val stepDuration = 60000 / (bpm * 4)
+                                            stepDuration * beat.drumPattern.cols
+                                        }
+
+                                        else -> 400
+                                    }
+
+                                    delay(duration.toLong())
+
                                     activeTiles = activeTiles - tile.id
                                 }
                             },
-                            onLongPress = { onLongPress(category.title, tile) }
+                            onLongPress = {
+                                onLongPress(category.title, tile)
+                            }
                         )
                     }
                 }
@@ -398,31 +550,99 @@ fun SoundPad(
     onLongPress: () -> Unit
 ){
     var pressed by remember { mutableStateOf(false) }
-    val animatedColor by animateColorAsState(if (isActive) Color.White else color, label = "")
-    val scale by animateFloatAsState(targetValue = if (pressed) 0.92f else 1f, label = "")
+    val animatedColor by animateColorAsState(
+        if (isActive) Color.White else color,
+        label = ""
+    )
+
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.92f else 1f,
+        label = ""
+    )
 
     Box(
         modifier = Modifier
             .aspectRatio(1f)
-            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .clip(RoundedCornerShape(20.dp))
-            .background(when { isPlayhead -> Color.White.copy(alpha = 0.25f); isActive -> animatedColor; else -> color })
-            .border(if (isActive) 3.dp else 0.dp, Color.White, RoundedCornerShape(20.dp))
-            .combinedClickable(onClick = { pressed = true; onClick() }, onLongClick = { onLongPress() })
+            .background(
+                when {
+                    isPlayhead -> Color.White.copy(alpha = 0.25f)
+                    isActive -> animatedColor
+                    else -> color
+                }
+            )
+            .border(
+                if (isActive) 3.dp else 0.dp,
+                Color.White,
+                RoundedCornerShape(20.dp)
+            )
+            .combinedClickable(
+                onClick = {
+                    pressed = true
+                    onClick()
+                },
+                onLongClick = {
+                    onLongPress()
+                }
+            )
             .padding(8.dp),
         contentAlignment = Alignment.Center
     ) {
-        Image(painter = icon, contentDescription = null, modifier = Modifier.size(40.dp))
+        Image(
+            painter = icon,
+            contentDescription = null,
+            modifier = Modifier.size(40.dp)
+        )
     }
-    LaunchedEffect(pressed) { if (pressed) { delay(150); pressed = false } }
-}
 
-@Composable
-fun BottomControls(isEditorMode: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(modifier = modifier, shape = RoundedCornerShape(24.dp), color = BottomBarColor, tonalElevation = 8.dp) {
-        Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
-            Icon(imageVector = Icons.Default.GraphicEq, contentDescription = null, tint = if (!isEditorMode) Color.White else Color.Gray, modifier = Modifier.clickable { onToggle() })
-            Icon(imageVector = Icons.Default.Piano, contentDescription = null, tint = if (isEditorMode) Color.White else Color.Gray, modifier = Modifier.clickable { onToggle() })
+    LaunchedEffect(pressed) {
+        if (pressed) {
+            delay(150)
+            pressed = false
         }
     }
 }
+
+@Composable
+fun BottomControls(
+    isEditorMode: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(24.dp),
+        color = BottomBarColor,
+        tonalElevation = 8.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(32.dp)
+        ) {
+
+            Icon(
+                imageVector = Icons.Default.GraphicEq,
+                contentDescription = null,
+                tint = if (!isEditorMode) Color.White else Color.Gray,
+                modifier = Modifier.clickable { onToggle() }
+            )
+
+            Icon(
+                imageVector = Icons.Default.Piano,
+                contentDescription = null,
+                tint = if (isEditorMode) Color.White else Color.Gray,
+                modifier = Modifier.clickable { onToggle() }
+            )
+        }
+    }
+
+
+}
+
+
+

@@ -1,8 +1,6 @@
 package org.example.project
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import pianoNotes
 
 class StepSequencer(
@@ -10,12 +8,18 @@ class StepSequencer(
     private val audioPlayer: AudioPlayer
 ) {
 
+    private val scope = CoroutineScope(Dispatchers.Default)
+
+    private var job: Job? = null
+
     private val activeDrumPatterns = mutableListOf<DrumEditorState>()
     private val activePianoPatterns = mutableListOf<PianoEditorState>()
 
     fun start() {
 
-        CoroutineScope(Dispatchers.Default).launch {
+        if (job != null) return
+
+        job = scope.launch {
 
             metronome.step.collect { step ->
 
@@ -24,6 +28,11 @@ class StepSequencer(
 
             }
         }
+    }
+
+    fun stop() {
+        job?.cancel()
+        job = null
     }
 
     fun addDrumPattern(pattern: DrumEditorState) {
