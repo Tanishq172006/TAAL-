@@ -235,3 +235,47 @@ For tomorrow:
 
 Now, we will sleep and wake up day after tomorrow :)
 Good night fellers!!
+
+
+
+# Devlog #8
+*08-03-2026* ~by [Tanishq Pandey](https://github.com/Tanishq172006)
+
+Another day full of debugging, version fixing and platform setup. Gradle decided to be our biggest enemy today, but progress was made and things are slowly getting stable.
+
+Keeping this short, here is what we did today:
+
+- [Anshul](https://www.github.com/anshulbadhani)
+    - Read through the API documentation to better understand how to implement it in the audio engine.
+
+- [Lavanya](https://www.github.com/Lavanya24R)
+    - Found the piano chords required for the app.
+    - Worked a bit on designing the app logo.
+
+- [Ananya](https://github.com/ananyatiwari05)
+    - Started setting up Firebase Authentication for iOS.
+    - Most of the setup is done, only a small issue remains which will be fixed and pushed tomorrow.
+
+- [Tanishq](https://github.com/Tanishq172006)
+    - Fist-fighting with Gradle since morning fixing dependency and version issues.
+    - Fixed Android completely and it is now working properly.
+
+For tomorrow:
+
+- [Tanishq](https://github.com/Tanishq172006)
+    - Fix the desktop build and make it work across all other platforms.
+    - Add UIs for other dialogs.
+    - Do some UI polishing and fixes.
+
+- [Lavanya](https://www.github.com/Lavanya24R)
+    - Add more tables in the database.
+    - Start implementing the UI connected to those tables.
+
+- [Anshul](https://www.github.com/anshulbadhani)
+    - Study the `ma_engine` object from [miniaudio](https://github.com/mackron/miniaudio).
+
+- [Ananya](https://github.com/ananyatiwari05)
+    - Fix the remaining Firebase authentication issue for desktop.
+    - Start creating the REST API for authentication.
+
+    welp college started what else lavanya and ananya came back to hostel so we have now a chance for offline meets 🔥 , but now daily work will be way more fun and welp gradle 😢 kills me atm but i wont give up and we all will fight and comeback stronger 
