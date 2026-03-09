@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts // Added for Launcher
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.lifecycleScope // Added for lifecycleScope
 import com.google.android.gms.auth.api.signin.GoogleSignIn // Added for GoogleSignIn
 import com.google.android.gms.common.api.ApiException // Added for ApiException
@@ -36,7 +37,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         AppContextHolder.context = applicationContext
         AudioImporter.currentActivity = this
 
@@ -55,5 +55,10 @@ class MainActivity : ComponentActivity() {
                 }
             )
         }
+    }
+    companion object {
+      init {
+         System.loadLibrary("project")
+      }
     }
 }
