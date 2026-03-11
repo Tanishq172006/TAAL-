@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.composeHotReload)
     id("com.google.gms.google-services")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -71,6 +72,7 @@ kotlin {
 
             implementation("dev.gitlive:firebase-auth:2.4.0")
             implementation("dev.gitlive:firebase-firestore:2.4.0")
+            implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
