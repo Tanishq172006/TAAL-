@@ -64,7 +64,6 @@ fun LoginSignupScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Password Input
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -150,10 +149,10 @@ class MockAuthRepository : AuthRepository {
     override suspend fun signInWithEmail(email: String, password: String): Result<Unit> = Result.success(Unit)
     override suspend fun signUp(email: String, password: String): Result<Unit> = Result.success(Unit)
     override suspend fun signInWithGoogle(): Result<Unit> = Result.success(Unit)
-
     override suspend fun firebaseAuthWithGoogle(idToken: String): Result<Unit> = Result.success(Unit)
 
-    override fun signOut() {}
+    override suspend fun signOut() {}
+
     override fun getCurrentUserId(): String? = "mock_user_123"
 }
 @Preview

@@ -1,5 +1,5 @@
 package org.example.project
 
-expect class AudioPlayer {
+expect class AudioPlayer() {
     fun playSound(name: String)
 }

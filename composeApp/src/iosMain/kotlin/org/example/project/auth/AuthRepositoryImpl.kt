@@ -1,23 +1,15 @@
 package org.example.project.auth
-import android.content.Context
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.GoogleAuthProvider
 import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.firestore
+import platform.Foundation.NSDate
+import platform.Foundation.timeIntervalSince1970
 
-class AuthRepositoryImpl(private val context: Context) : AuthRepository {
+class AuthRepositoryImpl : AuthRepository {
     private val auth = Firebase.auth
     private val db = Firebase.firestore
-
-    val googleSignInClient by lazy {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("464898087369-kga1alvnsrma2t3n9cadhj38rvcqv928.apps.googleusercontent.com") // Keep your ID here
-            .requestEmail()
-            .build()
-        GoogleSignIn.getClient(context, gso)
-    }
 
     override suspend fun signInWithEmail(email: String, password: String) = runCatching {
         auth.signInWithEmailAndPassword(email, password)
@@ -28,10 +20,12 @@ class AuthRepositoryImpl(private val context: Context) : AuthRepository {
         val authResult = auth.createUserWithEmailAndPassword(email, password)
         val user = authResult.user
         if (user != null) {
+            // iOS specific time fetcher
+            val currentTime = (NSDate().timeIntervalSince1970 * 1000).toLong()
             val userData = mapOf(
                 "uid" to user.uid,
                 "email" to email,
-                "createdAt" to System.currentTimeMillis()
+                "createdAt" to currentTime
             )
             db.collection("users").document(user.uid).set(userData)
         }
@@ -39,20 +33,22 @@ class AuthRepositoryImpl(private val context: Context) : AuthRepository {
     }
 
     override suspend fun signInWithGoogle(): Result<Unit> {
-        return Result.failure(Exception("LAUNCH_GOOGLE_INTENT"))
+        return Result.failure(Exception("LAUNCH_GOOGLE_SIGN_IN_IOS"))
     }
 
     override suspend fun firebaseAuthWithGoogle(idToken: String) = runCatching {
-        val credential = GoogleAuthProvider.credential(idToken, accessToken = null)
+        // Note: GitLive iOS requires an accessToken string parameter, even if empty.
+        val credential = GoogleAuthProvider.credential(idToken, accessToken = "")
         val authResult = auth.signInWithCredential(credential)
         val user = authResult.user
 
         if (user != null) {
+            val currentTime = (NSDate().timeIntervalSince1970 * 1000).toLong()
             val userData = mapOf(
                 "uid" to user.uid,
                 "email" to (user.email ?: ""),
                 "displayName" to (user.displayName ?: ""),
-                "lastLogin" to System.currentTimeMillis()
+                "lastLogin" to currentTime
             )
             db.collection("users").document(user.uid).set(userData)
         }

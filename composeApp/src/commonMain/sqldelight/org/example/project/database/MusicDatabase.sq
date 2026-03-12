@@ -1,0 +1,48 @@
+CREATE TABLE songs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    bpm INTEGER NOT NULL,
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE tracks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    song_id INTEGER NOT NULL,
+    instrument TEXT NOT NULL,
+    volume REAL NOT NULL,
+    FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
+);
+
+CREATE TABLE patterns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    song_id INTEGER NOT NULL,
+    track_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    length INTEGER NOT NULL,
+    pattern_data TEXT NOT NULL,
+    FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE,
+    FOREIGN KEY (track_id) REFERENCES tracks(id) ON DELETE CASCADE
+);
+
+-- Queries
+
+insertSong:
+INSERT INTO songs(name, bpm, created_at)
+VALUES (?, ?, ?);
+
+insertTrack:
+INSERT INTO tracks(song_id, instrument, volume)
+VALUES (?, ?, ?);
+
+insertPattern:
+INSERT INTO patterns(song_id, track_id, name, length, pattern_data)
+VALUES (?, ?, ?, ?, ?);
+
+selectAllSongs:
+SELECT * FROM songs;
+
+getPatternsForSong:
+SELECT * FROM patterns WHERE song_id = ? AND track_id = ?;
+
+getAllPatternData:
+SELECT pattern_data FROM patterns WHERE song_id = ? AND track_id = ? ;

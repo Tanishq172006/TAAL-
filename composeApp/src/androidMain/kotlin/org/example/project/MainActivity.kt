@@ -16,7 +16,7 @@ class MainActivity : ComponentActivity() {
     lateinit var audioPlayer: AudioPlayer
     private lateinit var authRepo: AuthRepositoryImpl
 
-    // This handles the result when the user picks a Google account
+
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         } catch (e: ApiException) {
-            // Sign in was stayed or failed
+
         }
     }
 
@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
         val audioPlayer = AudioPlayer(this)
 
         setContent {
-            // Ensure your App function in App.kt accepts these 3 parameters
+
             App(
                 audioPlayer = audioPlayer,
                 authRepository = authRepo,

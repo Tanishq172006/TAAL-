@@ -58,10 +58,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import pianoNotes
-import taal.composeapp.generated.resources.Res
 import kotlin.time.ExperimentalTime
-
-
 @Composable
 fun App(
     audioPlayer: AudioPlayer,
@@ -109,14 +106,14 @@ fun App(
                     }
                 }
 
-//                ProfileIcon(
-//                    modifier = Modifier
-//                        .align(Alignment.TopCenter)
-//                        .padding(10.dp),
-//                    onClick = {
-//                        showAuthScreen = true
-//                    }
-//                )
+                ProfileIcon(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(10.dp),
+                    onClick = {
+                        showAuthScreen = true
+                    }
+                )
 
                 if (showAuthScreen) {
                     Dialog(onDismissRequest = { showAuthScreen = false }) {
@@ -604,7 +601,6 @@ fun BottomControls(
             )
         }
     }
-
 
 }
 

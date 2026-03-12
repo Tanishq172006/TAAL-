@@ -8,15 +8,15 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.composeHotReload)
-
     id("com.google.gms.google-services")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
 
     androidTarget {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
@@ -44,9 +44,7 @@ kotlin {
                 sourceSets {
                     val androidMain by getting {
                         dependencies {
-                            implementation("com.google.firebase:firebase-firestore-ktx:25.1.1")
                             implementation("com.google.android.gms:play-services-auth:21.0.0")
-                            implementation("com.google.firebase:firebase-auth-ktx:23.0.0")
                         }
                     }
                 }
@@ -54,9 +52,6 @@ kotlin {
             implementation(libs.sqldelight.android.driver)
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
-            implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
-            implementation("com.google.android.gms:play-services-auth:21.0.0")
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
         }
         commonMain.dependencies {
 
@@ -69,16 +64,16 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
 
             implementation(compose.materialIconsExtended)
+            implementation(libs.sqldelight.runtime)
+            implementation(libs.sqldelight.coroutines)
 
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
 
-//            implementation("dev.gitlive:firebase-auth:1.10.3") {
-  //              exclude(group = "androidx.lifecycle")
-   //         }
-//            implementation("dev.gitlive:firebase-auth:1.10.3")
+            implementation("dev.gitlive:firebase-auth:2.4.0")
+            implementation("dev.gitlive:firebase-firestore:2.4.0")
+            implementation(libs.kotlinx.serialization.json)
         }
-
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
@@ -135,8 +130,8 @@ android {
 
     compileOptions {
 
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     externalNativeBuild {
         cmake {
